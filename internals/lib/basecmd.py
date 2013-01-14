@@ -1,10 +1,13 @@
-#!/usr/bin/python
-#
-# License: Refer to the README in the root directory
-#
-import os
+#!/usr/bin/env python
+# encoding: utf-8
 import cmd
-
+import os
+import readline
+import rlcompleter
+if 'libedit' in readline.__doc__:
+    readline.parse_and_bind("bind ^I rl_complete")
+else:
+    readline.parse_and_bind("tab: complete")
 class BaseCmd(cmd.Cmd):
 
     def __init__(self, session):
@@ -15,6 +18,7 @@ class BaseCmd(cmd.Cmd):
         self._hist = []      ## No history yet
         self._locals = {}      ## Initialize execution namespace for user
         self._globals = {}
+        self.cmdline = None
 
     ## Command definitions to support Cmd object functionality ##
     def do_help(self, args):
@@ -60,6 +64,7 @@ If you want to do some post command processing, do it here.
         """
         return stop
 
+
     def emptyline(self):
         """
 Do nothing on empty input line
@@ -72,12 +77,18 @@ Called on an input line when the command prefix is not recognized.
         """
         print "Command not found\n"
      
+    def do_shell(self, args):
+        """Pass command to a system shell when line begins with '!'"""
+        os.system(args)
 
     def do_clear(self, line):
 	    """
 This command clears the screen or the terminal window!
 	    """
-	    os.system('clear')
+	    if os.name == 'nt':
+	        os.system('cls')
+	    else:
+	        os.system('clear')
     
     def do_exit(self, line):
         """
